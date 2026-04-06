@@ -13,16 +13,23 @@ dotenv.config();
 // Initialize Firebase Admin
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const serviceAccountPath = path.resolve(__dirname, '../unittrack01-firebase-adminsdk-fbsvc-c7b3c401b7.json');
 
 try {
-  const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+  let serviceAccount;
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    // Production: read from environment variable
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } else {
+    // Local dev: read from file
+    const serviceAccountPath = path.resolve(__dirname, '../unittrack01-firebase-adminsdk-fbsvc-c7b3c401b7.json');
+    serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+  }
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
   console.log("Firebase Admin Initialized Successfully");
 } catch(err) {
-  console.error("Firebase Admin Initialization Failed. Ensure service account JSON is at the root directory.", err);
+  console.error("Firebase Admin Initialization Failed:", err.message);
 }
 
 const app = express();
